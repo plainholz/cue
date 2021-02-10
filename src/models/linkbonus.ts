@@ -7,7 +7,7 @@ export class LinkBonus {
     public name: string,
     public count: number
   ) {
-    this.members = Members.filter(member => member.value & membersValue);
+    this.members = Members.filter((member) => member.value & membersValue);
   }
 }
 
@@ -21,7 +21,7 @@ export const LinkBonusValues: { [key: number]: LinkBonus } = {
   260: new LinkBonus(260, "和菓子美人", 2),
   529: new LinkBonus(529, "お弁当女子", 3),
   1026: new LinkBonus(1026, "ラーメン同盟", 2),
-  1040: new LinkBonus(1040, "美味しいものセンサー", 2),
+  1040: new LinkBonus(1040, "美味いものセンサー", 2),
   1056: new LinkBonus(1056, "屋上の住人", 2),
   2056: new LinkBonus(2056, "運動っていいよね！", 2),
   2176: new LinkBonus(2176, "おしゃれさん", 2),

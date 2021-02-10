@@ -4,15 +4,31 @@
       <v-card-title>検索条件</v-card-title>
       <div :class="$style.flex">
         <v-card class="ma-4 pa-4" max-width="340">
-          <div>人数</div>
-          <v-btn-toggle v-model="numberOfPeople" mandatory>
+          <div>種類 (人数)</div>
+          <v-btn-toggle
+            v-model="numberOfPeople"
+            mandatory
+            @change="updateNumberOfPeople"
+          >
             <v-btn :value="4">レッスン用<br :class="$style.br" />(4人)</v-btn>
             <v-btn :value="5">お仕事用<br :class="$style.br" />(5人)</v-btn>
           </v-btn-toggle>
+          <v-checkbox
+            label="LvMAXを対象外にする"
+            v-model="ignoreLevelMax"
+            v-if="numberOfPeople === 4"
+            @change="updateIgnoreLevelMax"
+          />
         </v-card>
         <v-card class="ma-4 pa-4" max-width="340">
-          <div>発動数</div>
-          <v-btn-toggle v-model="numberOfActive" multiple mandatory>
+          <div>発動リンクボーナスの数</div>
+          <v-btn-toggle
+            v-model="numberOfActive"
+            multiple
+            mandatory
+            @change="updateNumberOfActive"
+          >
+            <v-btn :value="2">2</v-btn>
             <v-btn :value="3">3</v-btn>
             <v-btn :value="4">4</v-btn>
             <v-btn :value="5">5</v-btn>
@@ -65,6 +81,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { LinkBonus, LinkBonusValues } from "@/models/linkbonus";
 import { Member, Members } from "@/models/member";
 import MemberSelect from "@/components/MemberSelect.vue";
+import { State } from "@/store/index";
 
 class SearchResult {
   numberOfActive: number;
@@ -73,8 +90,8 @@ class SearchResult {
   memberValue: number;
   constructor(linkBonusArray: LinkBonus[], memberValue: number) {
     this.numberOfActive = linkBonusArray.length;
-    this.linkBonus = linkBonusArray.map(linkBonus => linkBonus.name);
-    this.members = Members.filter(member => member.value & memberValue);
+    this.linkBonus = linkBonusArray.map((linkBonus) => linkBonus.name);
+    this.members = Members.filter((member) => member.value & memberValue);
     this.memberValue = memberValue;
   }
 }
@@ -94,22 +111,34 @@ export default class LinkBonusSearch extends Vue {
   members: Member[] = [];
   searchResult: SearchResult[] = [];
   searchLoding = false;
-  created() {
-    this.numberOfPeople = 5;
-    this.numberOfActive = [3, 4, 5, 6];
+  ignoreLevelMax = false;
+  linkBonusLevels: { [name: string]: number } = {};
+  created(): void {
+    const state = this.$store.state as State;
+    this.numberOfPeople = state.numberOfPeople;
+    this.numberOfActive = state.numberOfActive;
+    this.ignoreLevelMax = state.ignoreLevelMax;
+    this.selectedMember = state.selectedMember;
     this.members = Members;
+    this.linkBonusLevels = (this.$store.state as State).linkBonusLevels;
   }
 
-  async search() {
+  async search(): Promise<void> {
     this.searchResult = [];
     this.searchLoding = true;
 
+    const linkBonusLevels =
+      this.numberOfPeople === 4 && this.ignoreLevelMax
+        ? this.linkBonusLevels
+        : undefined;
+
     const result = await this.searchAll(
       this.numberOfPeople,
-      this.numberOfActive
+      this.numberOfActive,
+      linkBonusLevels
     );
     if (this.selectedMember) {
-      this.searchResult = result.filter(searchResult => {
+      this.searchResult = result.filter((searchResult) => {
         return (
           (searchResult.memberValue & this.selectedMember) ===
           this.selectedMember
@@ -123,16 +152,22 @@ export default class LinkBonusSearch extends Vue {
 
   async searchAll(
     numberOfPeople: number,
-    numberOfActive: number[]
+    numberOfActive: number[],
+    linkBonusLevels?: { [name: string]: number }
   ): Promise<SearchResult[]> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const result: SearchResult[] = [];
       const values = this.combination(0, 0, 0, numberOfPeople);
-      values.forEach(value => {
+      values.forEach((value) => {
         const activeLink: LinkBonus[] = [];
         for (const key in LinkBonusValues) {
           const link = +key;
-          if ((link & value) === link) {
+          if (
+            (link & value) === link &&
+            (!linkBonusLevels ||
+              !linkBonusLevels[key] ||
+              linkBonusLevels[key] < 10)
+          ) {
             activeLink.push(LinkBonusValues[key]);
           }
         }
@@ -164,8 +199,18 @@ export default class LinkBonusSearch extends Vue {
     ).concat(this.combination(value, index + 1, length, maxlength));
   }
 
-  updateSelected(selected: number) {
+  updateNumberOfActive(value: number[]): void {
+    this.$store.commit("setNumberOfActive", value);
+  }
+  updateNumberOfPeople(value: number): void {
+    this.$store.commit("setNumberOfPeople", value);
+  }
+  updateIgnoreLevelMax(value: boolean): void {
+    this.$store.commit("setIgnoreLevelMax", value);
+  }
+  updateSelected(selected: number): void {
     this.selectedMember = selected;
+    this.$store.commit("setSelectedMember", selected);
   }
 }
 </script>

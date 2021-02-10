@@ -21,35 +21,32 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import LinkBonusSelect from "@/components/LinkBonusSelect.vue";
-import LinkBonusSearch from "@/components/LinkBonusSearch.vue";
-import Settings from "@/components/Settings.vue";
 
 class Tab {
   header: string;
-  component: object;
   path: string;
-  constructor(header: string, component: object, path: string) {
+  constructor(header: string, path: string) {
     this.header = header;
-    this.component = component;
     this.path = path;
   }
 }
 
 @Component({
-  components: { LinkBonusSelect, LinkBonusSearch, Settings },
+  components: {},
 })
 export default class App extends Vue {
   tabs = [
-    new Tab("検索", LinkBonusSearch, "/link-bonus-search"),
-    new Tab("発動状況", LinkBonusSelect, "/active-link-bonus"),
-    new Tab("設定", Settings, "/settings"),
+    new Tab("検索", "/link-bonus-search"),
+    new Tab("発動状況", "/active-link-bonus"),
+    new Tab("設定", "/settings"),
   ];
-  get activeTab() {
-    const tabIndex = this.tabs.findIndex(tab => tab.path === this.$route.path);
+  get activeTab(): number {
+    const tabIndex = this.tabs.findIndex(
+      (tab) => tab.path === this.$route.path
+    );
     return tabIndex < 0 ? 0 : tabIndex;
   }
-  set activeTab(index) {
+  set activeTab(index: number) {
     const path = this.tabs[index].path;
     if (this.$route.path !== path) {
       this.$router.push(path);

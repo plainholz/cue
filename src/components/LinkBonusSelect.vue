@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { LinkBonusValues } from "@/models/linkbonus";
+import { LinkBonus, LinkBonusValues } from "@/models/linkbonus";
 import { Member, Members } from "@/models/member";
 import MemberSelect from "@/components/MemberSelect.vue";
 
@@ -41,11 +41,11 @@ export default class LinkBonusSelect extends Vue {
   selectedMember = 0;
   members: Member[] = [];
 
-  created() {
+  created(): void {
     this.members = Members;
   }
 
-  get activeLinkBonus() {
+  get activeLinkBonus(): LinkBonus[] {
     const result = [];
     for (const key in LinkBonusValues) {
       const value = +key;
@@ -57,11 +57,11 @@ export default class LinkBonusSelect extends Vue {
     return result;
   }
 
-  reset() {
+  reset(): void {
     this.selectedMember = 0;
   }
 
-  updateSelected(selected: number) {
+  updateSelected(selected: number): void {
     this.selectedMember = selected;
   }
 }

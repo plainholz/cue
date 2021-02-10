@@ -2,7 +2,7 @@
   <v-container>
     <v-card>
       <v-card-title>設定</v-card-title>
-      <div style="margin: 16px">未実装</div>
+      <LinkBonusLevels class="ma-4" />
       <v-card-actions />
     </v-card>
   </v-container>
@@ -10,9 +10,10 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import LinkBonusLevels from "@/components/LinkBonusLevels.vue";
 
 @Component({
-  components: {},
+  components: { LinkBonusLevels },
 })
 export default class Settings extends Vue {}
 </script>

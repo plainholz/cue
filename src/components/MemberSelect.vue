@@ -28,13 +28,13 @@ export default class MemberSelect extends Vue {
   selected!: number;
 
   @Emit("select")
-  public select(value: number) {} // eslint-disable-line
+  public select(value: number): void {} // eslint-disable-line
 
-  toggle(member: Member) {
+  toggle(member: Member): void {
     this.select(this.selected ^ member.value);
   }
 
-  isActive(member: Member) {
+  isActive(member: Member): boolean {
     return !!(this.selected & member.value);
   }
 }
