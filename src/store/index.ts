@@ -8,7 +8,6 @@ export interface State {
   linkBonusLevels: { [name: string]: number };
   numberOfPeople: number;
   numberOfActive: number[];
-  ignoreLevelMax: boolean;
   selectedMember: number;
 }
 
@@ -17,7 +16,6 @@ export default new Vuex.Store({
     linkBonusLevels: {},
     numberOfPeople: 5,
     numberOfActive: [3, 4, 5, 6],
-    ignoreLevelMax: false,
     selectedMember: 0,
   },
   mutations: {
@@ -32,9 +30,6 @@ export default new Vuex.Store({
     },
     setNumberOfActive: (state: State, payload: number[]) => {
       state.numberOfActive = payload;
-    },
-    setIgnoreLevelMax: (state: State, payload: boolean) => {
-      state.ignoreLevelMax = payload;
     },
     setSelectedMember: (state: State, payload: number) => {
       state.selectedMember = payload;

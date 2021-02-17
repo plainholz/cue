@@ -13,12 +13,6 @@
             <v-btn :value="4">レッスン用<br :class="$style.br" />(4人)</v-btn>
             <v-btn :value="5">お仕事用<br :class="$style.br" />(5人)</v-btn>
           </v-btn-toggle>
-          <v-checkbox
-            label="LvMAXを対象外にする"
-            v-model="ignoreLevelMax"
-            v-if="numberOfPeople === 4"
-            @change="updateIgnoreLevelMax"
-          />
         </v-card>
         <v-card class="ma-4 pa-4" max-width="340">
           <div>発動リンクボーナスの数</div>
@@ -56,6 +50,7 @@
         :sort-desc="true"
         :loading="searchLoding"
         loading-text="検索中"
+        :no-data-text="noDataText"
       >
         <template v-slot:[`item.linkBonus`]="{ item }">
           <div :class="$style.resultLinkBonus">
@@ -88,9 +83,18 @@ class SearchResult {
   linkBonus: string[];
   members: Member[];
   memberValue: number;
-  constructor(linkBonusArray: LinkBonus[], memberValue: number) {
+  constructor(
+    linkBonusArray: { linkBonus: LinkBonus; level: number }[],
+    memberValue: number
+  ) {
     this.numberOfActive = linkBonusArray.length;
-    this.linkBonus = linkBonusArray.map((linkBonus) => linkBonus.name);
+    this.linkBonus = linkBonusArray.map((value) => {
+      if (value.level === undefined) {
+        return value.linkBonus.name;
+      } else {
+        return `${value.linkBonus.name} (Lv.${value.level})`;
+      }
+    });
     this.members = Members.filter((member) => member.value & memberValue);
     this.memberValue = memberValue;
   }
@@ -111,31 +115,27 @@ export default class LinkBonusSearch extends Vue {
   members: Member[] = [];
   searchResult: SearchResult[] = [];
   searchLoding = false;
-  ignoreLevelMax = false;
   linkBonusLevels: { [name: string]: number } = {};
+  noDataText = "";
   created(): void {
     const state = this.$store.state as State;
     this.numberOfPeople = state.numberOfPeople;
     this.numberOfActive = state.numberOfActive;
-    this.ignoreLevelMax = state.ignoreLevelMax;
     this.selectedMember = state.selectedMember;
     this.members = Members;
     this.linkBonusLevels = (this.$store.state as State).linkBonusLevels;
+    this.noDataText = "検索結果がここに表示されます。";
   }
 
   async search(): Promise<void> {
+    this.noDataText = "";
     this.searchResult = [];
     this.searchLoding = true;
-
-    const linkBonusLevels =
-      this.numberOfPeople === 4 && this.ignoreLevelMax
-        ? this.linkBonusLevels
-        : undefined;
 
     const result = await this.searchAll(
       this.numberOfPeople,
       this.numberOfActive,
-      linkBonusLevels
+      this.linkBonusLevels
     );
     if (this.selectedMember) {
       this.searchResult = result.filter((searchResult) => {
@@ -148,34 +148,35 @@ export default class LinkBonusSearch extends Vue {
       this.searchResult = result;
     }
     this.searchLoding = false;
+    this.noDataText = "見つかりませんでした。";
   }
 
   async searchAll(
     numberOfPeople: number,
     numberOfActive: number[],
-    linkBonusLevels?: { [name: string]: number }
+    linkBonusLevels: { [name: string]: number }
   ): Promise<SearchResult[]> {
     return new Promise((resolve) => {
-      const result: SearchResult[] = [];
+      const result: { [key: number]: SearchResult } = {};
       const values = this.combination(0, 0, 0, numberOfPeople);
       values.forEach((value) => {
-        const activeLink: LinkBonus[] = [];
+        const activeLink: { linkBonus: LinkBonus; level: number }[] = [];
+        let linkKey = 0;
         for (const key in LinkBonusValues) {
           const link = +key;
-          if (
-            (link & value) === link &&
-            (!linkBonusLevels ||
-              !linkBonusLevels[key] ||
-              linkBonusLevels[key] < 10)
-          ) {
-            activeLink.push(LinkBonusValues[key]);
+          if ((link & value) === link) {
+            activeLink.push({
+              linkBonus: LinkBonusValues[key],
+              level: linkBonusLevels[key],
+            });
+            linkKey = linkKey | link;
           }
         }
-        if (numberOfActive.includes(activeLink.length)) {
-          result.push(new SearchResult(activeLink, value));
+        if (numberOfActive.includes(activeLink.length) && !result[linkKey]) {
+          result[linkKey] = new SearchResult(activeLink, linkKey);
         }
       });
-      resolve(result);
+      resolve(Object.values(result));
     });
   }
 

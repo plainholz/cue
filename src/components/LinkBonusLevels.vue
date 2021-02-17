@@ -1,7 +1,11 @@
 <template>
   <v-card class="pa-4">
+    <v-card-title>リンクボーナスレベル</v-card-title>
+    <div class="mx-4 mb-4">
+      <v-text-field label="リンクボーナス名検索" v-model="searchText" />
+    </div>
     <div
-      v-for="linkBonusLevel in linkBonusLevels"
+      v-for="linkBonusLevel in filterdLinkBonusLevels"
       :key="linkBonusLevel.name"
       class="pb-4"
     >
@@ -46,6 +50,7 @@ class LinkBonusLevel {
 export default class LinkBonusLevels extends Vue {
   linkBonusLevels: { [key: string]: LinkBonusLevel } = {};
   tickLabels: string[] = [];
+  searchText = "";
   created(): void {
     const linkBonusLevels = (this.$store.state as State).linkBonusLevels;
     for (const key in LinkBonusValues) {
@@ -76,6 +81,20 @@ export default class LinkBonusLevels extends Vue {
     });
     const linkBonusLevel = new LinkBonusLevel(key, name, value);
     this.$set(this.linkBonusLevels, key, linkBonusLevel);
+  }
+  get filterdLinkBonusLevels(): { [key: string]: LinkBonusLevel } {
+    if (this.searchText) {
+      const linkBonusLevels: { [key: string]: LinkBonusLevel } = {};
+      for (const key in this.linkBonusLevels) {
+        const linkBonus = this.linkBonusLevels[key];
+        if (linkBonus.name.includes(this.searchText)) {
+          linkBonusLevels[key] = linkBonus;
+        }
+      }
+      return linkBonusLevels;
+    } else {
+      return this.linkBonusLevels;
+    }
   }
 }
 </script>
