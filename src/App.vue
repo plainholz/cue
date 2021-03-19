@@ -38,7 +38,7 @@ export default class App extends Vue {
   tabs = [
     new Tab("検索", "/link-bonus-search"),
     new Tab("発動状況", "/active-link-bonus"),
-    new Tab("設定", "/settings"),
+    new Tab("レベル設定", "/settings"),
   ];
   get activeTab(): number {
     const tabIndex = this.tabs.findIndex(

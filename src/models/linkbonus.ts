@@ -32,6 +32,7 @@ export const LinkBonusValues: { [key: number]: LinkBonus } = {
   4353: new LinkBonus(4353, "真面目さん", 3),
   6272: new LinkBonus(6272, "買いものだいすき！", 3),
   8194: new LinkBonus(8194, "自分に素直なだけっ", 2),
+  8196: new LinkBonus(8196, "こだわりつよめ", 2),
   8704: new LinkBonus(8704, "クールビューティー", 2),
   8712: new LinkBonus(8712, "高身長女子", 3),
   12288: new LinkBonus(12288, "悪魔声優コンビ", 2),
